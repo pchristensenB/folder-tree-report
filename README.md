@@ -47,7 +47,7 @@ For this you will need a Box account. If you have not already got one, sign up h
 
 <img src="/img/box2.png" width="90%" height="90%">
 
-6. Copy the client ID as you will need it later, save changes
+6. Copy the client ID and client secret as you will need these later, save changes
 
 <img src="/img/box4.png" width="90%" height="90%">
 
