@@ -51,13 +51,13 @@ For this you will need a Box account. If you have not already got one, sign up h
 
 <img src="/img/box4.png" width="90%" height="90%">
 
-7. Copy the client secret and add it to the environment variable in your AWS Lamdba
+7. Copy the client secret and add it to the environment variable in your AWS Lamdba so you need to go back there for this
 
 <img src="/img/env1.png" width="90%" height="90%">
 
 <img src="/img/env2.png" width="90%" height="90%">
 
-Configure the Web App Integration
+Configure the Web App Integration back in the Box Developer Console
 1. Click the 'Integrations' tab and create new integration
 2. Call it 'Folder Tree Report' or similar (this will be the name that will appear in the menu)
 3. Set it to work on folders and requiring full permissions. 
