@@ -1,4 +1,4 @@
-# folder-tree-report
+# Folder Tree Report with Shared Links
 Shows how a simple integration can be used to create an exportable folder tree report with shared links from Box. This repo is part of this Box Developer blog post: >>URL HERE
 
 Steps to setup including integration with Box (for testing this on a local web server with a developer token, see <a href='README_SIMPLE.md'>this page</a>
@@ -41,28 +41,32 @@ For this you will need a Box account. If you have not already got one, sign up h
 
 <img src="/img/box1.png" width="90%" height="90%">
 
-3. The app needs to be custom app, call it 'Folder Tree Report' or similar and fill out the details (the options are only for Box tracking purposes and will not limit your app in any way)
+3. The app needs to be custom app, call it 'Folder Tree Report' or similar and fill out the details
 4. Choose User Authentication (OAuth 2.0) as the authentication method
 5. Make sure it has read and write scope
 
 <img src="/img/box2.png" width="90%" height="90%">
 
-6. Copy the client ID as you will need it later, save changes
+6. Copy the client ID and client secret as you will need these later, save changes
 
 <img src="/img/box4.png" width="90%" height="90%">
 
-7. Copy the client secret and add it to the environment variable in your AWS Lamdba
+7. Copy the client secret and add it to the environment variable in your AWS Lamdba so you need to go back there for this
 
 <img src="/img/env1.png" width="90%" height="90%">
 
 <img src="/img/env2.png" width="90%" height="90%">
 
-Configure the Web App Integration
+Configure the Web App Integration back in the Box Developer Console
 1. Click the 'Integrations' tab and create new integration
-2. Call it 'Folder Tree Repot' or similar (this will be the name that will appear in the menu)
-3. Set it to work on files and requiring full permissions. You can also limit to only video extensions such as mp4, mov etc
+2. Call it 'Folder Tree Report' or similar (this will be the name that will appear in the menu)
+3. Set it to work on folders and requiring full permissions. 
+
+<img src="/img/box6.png" width="90%" height="90%">
+
 4. Set the callback URL to be your website  (eg. https://mygithubusername.github.io/index.html) and add '?clientId=THE_CLIENT_ID_YOU_CREATED_IN_SETTING_UP_THE_BOX_APP
 5. Add call back parameters as below
+6. Set it to open in a new tab
 
 <img src="/img/box3.png" width="90%" height="90%">
 
