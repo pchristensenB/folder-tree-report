@@ -40,7 +40,7 @@
             else {
               $.ajax({
                 method: 'get',
-                url:"https://dik4ogwqph.execute-api.eu-west-2.amazonaws.com/default/box-node-token-generator",
+                url:"TOKEN_GENERATOR_URL",
                 data: { authCode: params.get('auth'), id: params.get('id'), clientId: params.get('clientId') },
                 crossDomain: true,
                 cache: false,
