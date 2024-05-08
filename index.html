@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Folder tree report</title>
+    <!-- Meta tags to prevent caching -->
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+  </head>
+  
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="./lib/bundle.js"></script>
+    <script>
+        var token;
+        var sharedLink;
+        const { BoxClient, BoxDeveloperTokenAuth } =window['box-typescript-sdk-gen'];
+        let client;
+        let counter=0;
+        $(document).ready(function () {
+            var params = new URLSearchParams(window.location.search);
+            //If token provided in URL, use this token, if not use token generator
+            if(params.get('token')!=null) {
+              token = params.get('token');
+              try {
+                //Create a Box client using the token
+                client = new BoxClient({auth: new BoxDeveloperTokenAuth({token }),
+                });
+                //Enabled the generate button as we now have access to Box API
+                $("#generate").prop("disabled",false);
+              } catch (e) {
+                console.error(e);
+              }
+            }
+            else {
+              $.ajax({
+                method: 'get',
+                url:"https://dik4ogwqph.execute-api.eu-west-2.amazonaws.com/default/box-node-token-generator",
+                data: { authCode: params.get('auth'), id: params.get('id'), clientId: params.get('clientId') },
+                crossDomain: true,
+                cache: false,
+                success: async function (response) {
+                  //set the token
+                  token = response.token;
+                  try {
+                      //Create a Box client using the token
+                      client = new BoxClient({auth: new BoxDeveloperTokenAuth({token }),
+                      });
+                      //Enabled the generate button as we now have access to Box API
+                      $("#generate").prop("disabled",false);
+                    } catch (e) {
+                      console.error(e);
+                    }
+                }
+              });
+            }
+            var id = params.get('id');
+            $("#TopLevel").attr("id",id);
+            //Generates a PDF from specified HTML DOM Element
+            $("#pdfgen").click( function() {
+                const element = document.getElementById('index');
+                // Choose the element and save the PDF for your user.
+                html2pdf().from(element).save();
+            })
+             //Generates the folder tree with the files
+            $("#generate").click( async function () {
+                //Get the type of shared link requested
+                sharedLink = $("input[name='sl']:checked").val();
+                //Empty current tree
+                $(".init").empty();
+                //Get top level name                
+                let toplevelname = await client.folders.getFolderById(id);
+                $("#TopLevelText").text(toplevelname.name);
+                getItems(id,id)
+              });
+        });
+        async function getItems(folderId,parentId) {
+            console.log(folderId + '::' + counter);
+            counter++;
+            let items = await client.folders.getFolderItems(folderId,{fields:["id,name,shared_link"]});
+            var fileListContainer = $("<ul></ul");
+             $.each(items.entries, function(k, data) {
+                //If folder, add it to the list and get items for this folder
+                if(data.type=='folder') {
+                    var folderListContainer = $("<ul id="  +data.id + "></ul");
+                    folderListContainer.append($("<li class='uf'  parent=" + parentId + ">"+data.name + "</li>"));
+                    $("#" + folderId).append(folderListContainer);
+                    getItems(data.id,folderId);
+                }
+
+                else if(data.type=='file') {
+                    //If no shared link required, just output the file name and icon and attach to parent
+                    if(sharedLink=='None') {
+                        fileListContainer.append($("<li class='pf' id='u_" + folderId + "'><img height=16 width=16 src='iconsbox/" + data.name.split('.').pop().toLowerCase() + ".svg'/> "+data.name +"</li>"));
+                    }
+                    else {
+                        //If shared link requested - first check if shared link already exists
+                        var link;
+                        console.log(data.sharedLink.access + "=" + sharedLink);                
+                        if(data.sharedLink==null || data.sharedLink.access!=sharedLink) {
+                            //Create shared link and append file with place holder text. Will be updated by async function
+                            link = createSharedLink(data.id,sharedLink,data.name);
+                            fileListContainer.append($("<li class='pf' id='u_" + folderId + "'><img height=16 width=16 src='iconsbox/" + data.name.split('.').pop().toLowerCase() + ".svg'/> "+
+                            "<a id=l_"+data.id + " href=" + link + " target=_blank>Generating link..</li>"));
+                        }
+                        else {
+                            //Use existing shared link and append file
+                            link = data.sharedLink.url;
+                            fileListContainer.append($("<li class='pf' id='u_" + folderId + "'><img height=16 width=16 src='iconsbox/" + data.name.split('.').pop().toLowerCase() + ".svg'/> "+
+                            "<a id=l_"+data.id + " href=" + link + " target=_blank>" + data.name +"</li>"));
+                        }
+                    }
+                }
+                });
+                //Append files to parent folder 
+                $("#" + folderId).append(fileListContainer);
+                counter--;
+            }
+            
+       //Creates a shared link on a flie
+       async function createSharedLink(fileId,type,name) {
+        let sharedLinkObject = await client.sharedLinksFiles.addShareLinkToFile(
+        fileId, 
+        {
+            sharedLink: { access: sharedLink } 
+        } ,
+        { fields: 'shared_link'  } 
+        );
+        //Set the URL to the shared link 
+        $("#l_" + fileId).attr("href",sharedLinkObject.sharedLink.url);
+        //Set the text to the name 
+        $("#l_" + fileId).text(name);
+        
+      };
+          
+      //Gets the corresponding icon for file based on extension
+      function getIcon(element) {
+        if (element.type == 'file') {
+          return "list-style-image: url('iconsbox/'" + element.name.split('.').pop().toLowerCase() + "'.svg')";
+        }
+        else if (element.type == 'folder') {
+            return ',"icon":"./img/iconsbox/folder.svg"';
+        }
+        return '';
+      }
+         
+    </script>
+
+    <style>
+        .uf {
+           list-style-image: url('Folder-32.png');
+           list-style-type: none;
+        }
+        .pf {
+         list-style-image: none;
+           margin-left:-10px;
+           list-style-type: none;
+        }
+        .panel-body {
+            height:auto !important;
+            }
+      
+        </style>
+    <body style="margin-top:25px">
+
+        <div class="container" >
+          <div class="row">
+            <div id="buttons">
+                Shared link type:
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="sl" id="flexCheckChecked" checked value="None" />None
+                <label class="form-check-label" for="flexCheckChecked"></label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="sl" id="flexCheckChecked" value="collaborators" />Only collaborators
+                <label class="form-check-label" for="flexCheckChecked"></label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="sl" id="flexCheckChecked" value="company" />Company
+                <label class="form-check-label" for="flexCheckChecked"></label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="sl" id="flexCheckChecked" value="open" />Public
+                <label class="form-check-label" for="flexCheckChecked"></label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input bg-primary btn" type="button" type="button" id="generate" value="Generate Report" disabled="true"/>
+                <label class="form-check-label" for="flexCheckChecked"></label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input bg-primary btn" type="button" type="button" id="pdfgen" value="Download PDF"/>
+                <label class="form-check-label" for="flexCheckChecked"></label>
+              </div>
+            </div>
+          </div>
+             <div class="row">
+              <div class="panel-body" id="index">
+                <span id="TopLevelText"></span>
+                  <ul class="init uf" id="TopLevel"></ul>
+              </div>
+         </div>
+      </body>
+</html>
