@@ -41,7 +41,7 @@ For this you will need a Box account. If you have not already got one, sign up h
 
 <img src="/img/box1.png" width="90%" height="90%">
 
-3. The app needs to be custom app, call it 'Folder Tree Report' or similar and fill out the details (the options are only for Box tracking purposes and will not limit your app in any way)
+3. The app needs to be custom app, call it 'Folder Tree Report' or similar and fill out the details
 4. Choose User Authentication (OAuth 2.0) as the authentication method
 5. Make sure it has read and write scope
 
@@ -59,10 +59,14 @@ For this you will need a Box account. If you have not already got one, sign up h
 
 Configure the Web App Integration
 1. Click the 'Integrations' tab and create new integration
-2. Call it 'Folder Tree Repot' or similar (this will be the name that will appear in the menu)
-3. Set it to work on files and requiring full permissions. You can also limit to only video extensions such as mp4, mov etc
+2. Call it 'Folder Tree Report' or similar (this will be the name that will appear in the menu)
+3. Set it to work on folders and requiring full permissions. 
+
+<img src="/img/box6.png" width="90%" height="90%">
+
 4. Set the callback URL to be your website  (eg. https://mygithubusername.github.io/index.html) and add '?clientId=THE_CLIENT_ID_YOU_CREATED_IN_SETTING_UP_THE_BOX_APP
 5. Add call back parameters as below
+6. Set it to open in a new tab
 
 <img src="/img/box3.png" width="90%" height="90%">
 
