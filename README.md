@@ -1,5 +1,5 @@
 # Folder Tree Report with Shared Links
-Shows how a simple integration can be used to create an exportable folder tree report with shared links from Box. This repo is part of this Box Developer blog post: >>URL HERE
+Shows how a simple integration can be used to create an exportable folder tree report with shared links from Box. This repo is part of this Box Developer blog post: (https://medium.com/box-developer-blog/lets-talk-about-folder-tree-reports-50f85a0739ff)
 
 Steps to setup including integration with Box (for testing this on a local web server with a developer token, see <a href='README_SIMPLE.md'>this page</a>
 
